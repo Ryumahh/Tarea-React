@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useParams } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useParams } from "react-router-dom";
 import axios from 'axios';
 
 function ReservaPage() {
@@ -8,6 +8,19 @@ function ReservaPage() {
 
   // Estado para almacenar los detalles de la película
   const [movieDetails, setMovieDetails] = useState(null);
+
+  // Estado para almacenar las entradas compradas
+  const [entradasCompradas, setEntradasCompradas] = useState(() => {
+    const entradasGuardadas = localStorage.getItem('entradasCompradas');
+    return entradasGuardadas ? JSON.parse(entradasGuardadas) : [];
+  });
+
+  // Estado para el formulario de reserva
+  const [formData, setFormData] = useState({
+    hora: '',
+    nombre: '',
+    asientos: [],
+  });
 
   // Cargar los detalles de la película cuando el componente se monte
   useEffect(() => {
@@ -25,14 +38,7 @@ function ReservaPage() {
     fetchMovieDetails();
   }, [id]);
 
-  // Estado para el formulario
-  const [formData, setFormData] = useState({
-    hora: '',
-    nombre: '',
-    asientos: [],
-  });
-
-  // Manejar cambios en el formulario
+  // Manejar cambios en los inputs del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -53,8 +59,29 @@ function ReservaPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Validar si se han completado todos los campos
+    if (!formData.hora || !formData.nombre) {
+      alert('Por favor completa todos los campos.');
+      return;
+    }
+
+    // Agregar la nueva reserva a las entradas compradas
+    const nuevaReserva = {
+      hora: formData.hora,
+      nombre: formData.nombre,
+      pelicula: movieDetails.title,
+      asientos: formData.asientos, // Agregar asientos aquí
+    };
+
+    setEntradasCompradas([...entradasCompradas, nuevaReserva]);
+
+    // Guardar las entradas compradas en localStorage
+    localStorage.setItem('entradasCompradas', JSON.stringify([...entradasCompradas, nuevaReserva]));
+
+    // Mostrar mensaje de reserva completada
     alert(`¡Reserva completada para la película "${movieDetails.title}" por un precio de 6,75€!`);
 
+    // Limpiar el formulario
     setFormData({
       hora: '',
       nombre: '',
@@ -94,17 +121,28 @@ function ReservaPage() {
             required
           />
         </div>
-        <div className="mb-4">
-          <label className="block text-white text-sm font-bold mb-2" htmlFor="asientos">
-            Seleccione los asientos:
-          </label>
-
-          <SeatSelection onSelectSeats={handleSeatSelection} />
-        </div>
+        {/* Componente de selección de asientos */}
+        <SeatSelection onSelectSeats={handleSeatSelection} />
         <button type="submit" className="bg-yellow-500 hover:bg-yellow-600/90 text-white font-bold py-2 px-4 rounded ml-2">
           Hacer Reserva
         </button>
       </form>
+
+      {/* Mostrar las entradas compradas */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">Entradas compradas</h2>
+        {entradasCompradas.length === 0 ? (
+          <p>No has comprado ninguna entrada aún.</p>
+        ) : (
+          <ul>
+            {entradasCompradas.map((entrada, index) => (
+              <li key={index} className="mb-2">
+                <strong>Película:</strong> {entrada.pelicula}, <strong>Hora:</strong> {entrada.hora}, <strong>Nombre:</strong> {entrada.nombre}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
@@ -165,7 +203,6 @@ function SeatSelection({ onSelectSeats }) {
           <option key={index + 1} value={index + 1}>{index + 1}</option>
         ))}
       </select>
-
       
     </div>
   );

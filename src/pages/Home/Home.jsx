@@ -1,30 +1,28 @@
+import './Home.css'
 import { useEffect, useState } from "react";
+import { getMoviesBy } from '../../services/films';
 import { Carousel } from 'flowbite-react';
 import { Link } from "react-router-dom";
-import axios from 'axios';
-import FilmPoster from '../../components/FilmPoster';
 
 function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+
   const [films, setFilms] = useState([]);
 
-  // Fetch popular movies from API
   useEffect(() => {
-    const fetchPopularMovies = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/movie/popular?api_key=9ebbf65c80c0e6ee15f83825a6422dd5`
-        );
-        setFilms(response.data.results);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching popular movies:', error);
-        setIsLoading(false);
-      }
-    };
+    getMoviesBy('a')
+      .then(data => {
+        return data.json();
+      })
+      .then(post => {
+        const { description = [] } = post;
+        setFilms(description.slice(0, 8))
 
-    fetchPopularMovies();
+      }).catch(error => {
+        console.log("Ocurrio un error al hacer fetch")
+        console.log(error)
+      })
   }, []);
+
 
   return (
     <>
@@ -55,24 +53,21 @@ function Home() {
       </section>
 
 
-        <h1 className='text-gray-200 font-extrabold text-4xl mb-7'>Películas Populares</h1>
-        <section className="mb-6 h-1/5 w-1/5 sliderIn">
-        {isLoading ? (
-          <p>Cargando películas...</p>
-        ) : (
-          <Carousel>
-            {films.map((film) => (
-              <FilmPoster
-                key={film.id}
-                id={film.id}
-                posterUrl={`https://image.tmdb.org/t/p/w200${film.poster_path}`}
-              />
-            ))}
+      <section>
+      <h1 className='text-gray-200 font-extrabold text-4xl mb-7'>Películas Populares</h1>
+        <div className="h-96 h- mb-2 mt-6 sm:h-64 xl:h-80 2xl:h-96">
+          <Carousel slideInterval={2000} className='mb-3 mt-3'>
+            {films?.map((film, key) =>
+              <img key={key} title={film['#AKA']} alt={film['#AKA']} src={film['#IMG_POSTER']}
+                className='w-full h-full object-contain cursor-pointer' />
+
+            )}
           </Carousel>
-        )}
+        </div>
       </section>
+
     </>
-  );
+  )
 }
 
-export default Home;
+export default Home

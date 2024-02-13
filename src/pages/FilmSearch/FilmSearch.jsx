@@ -38,7 +38,7 @@ function FilmSearch() {
               key={film.id}
               id={film.id}
               title={film.title}
-              posterUrl={`https://image.tmdb.org/t/p/w500${film.poster_path}`}
+              poster_path={film.poster_path}
             />
           ))
         )}

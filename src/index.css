@@ -18,13 +18,12 @@ body{
     background-color: #282828;
     border-radius: 0.8rem;
   }
+
 img{
   border-radius:20px;
 }
 
-p{
-  text-align: justify;
-}
+
 
 img,button,input,a,iframe,br{
   user-select: none;
@@ -35,14 +34,6 @@ img,button,input,a,iframe,br{
   color: white;
 }
 
-.TitPelis{
-  color: #ac9234;
-
-}
-
-.sliderIn{
-  margin-left: 40%;
-}
 
 ::-webkit-scrollbar {
   width: 10px; /* Ancho del track */
